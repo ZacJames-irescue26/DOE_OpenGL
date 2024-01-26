@@ -150,14 +150,39 @@ vec4 spotLight()
 
 	return (texture(texture_diffuse0, texCoord) * (diffuse * inten + ambient) + texture(specular0, texCoord).r * specular * inten) * lightColor;
 }
+float inverseLerp(float v, float minvalue, float maxvalue)
+{
+    return (v - minvalue) / (maxvalue - minvalue);
+}
+
+float remap(float v, float inMin, float inMax, float outMin, float outMax)
+{
+    float t = inverseLerp(v, inMin, inMax);
+    return mix(outMin, outMax, v);
+}
 
 
 void main()
 {
 	// outputs final color
-	FragColor = direcLight();
+	//FragColor = direcLight();
 	//vec3 I = normalize(Position - camPos);
     //vec3 R = reflect(I, normalize(Normal));
     //FragColor = vec4(texture(skybox, R).rgb, 1.0);
+	vec3 baseColour = vec3(0.75);
+	vec3 lighting = vec3(0.0);
+	vec3 Colour = vec3(0.0);
+	vec3 normal = normalize(Normal);
+	// ambient
+	vec3 Ambient = vec3(0.5);
+
+	//hemi Light
+
+
+	lighting = Ambient;
+
+	Colour = baseColour * lighting;
+	Colour = normal;
+	FragColor = vec4(Colour, 1.0f);
 	EntityId = v_EntityID;
 }

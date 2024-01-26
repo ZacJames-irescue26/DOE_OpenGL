@@ -49,6 +49,8 @@ public:
 	void SetPerspectiveNearClip(float nearClip) {m_PerspectiveNear = nearClip; RecalculateProjection();}
 	float GetPerspectiveFarClip() const { return m_PerspectiveFar; }
 	void SetPerspectiveFarClip(float farClip) { m_PerspectiveFar = farClip; RecalculateProjection(); }
+
+
 	glm::quat GetOrientation() {return glm::quat(glm::vec3(Orientation));}
 	
 

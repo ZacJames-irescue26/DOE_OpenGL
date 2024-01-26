@@ -47,6 +47,10 @@ void Camera::RecalculateProjection()
 	}
 	else
 	{
+		m_OrthographicSize = 10.0f;
+		m_AspectRatio = 16.0/9.0;
+		m_OrthographicNear = 0.1f;
+		m_OrthographicFar = 1000.0f;
 		view = glm::lookAt(Position, Position + Orientation, Up);
 		float orthoLeft = -m_OrthographicSize * m_AspectRatio * 0.5f;
 		float orthoRight = m_OrthographicSize * m_AspectRatio * 0.5f;

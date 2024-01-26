@@ -28,6 +28,8 @@ void EditorLayer::OnAttach()
 	m_FrameBuffer = std::make_shared<OpenGLFramebuffer>(FBSpec);
 	ShaderMap = GameEngine::Get().GetShaderMap();
 	m_camera = GameEngine::Get().GetCamera();
+	m_camera->SetProjectionType(Camera::ProjectionType::Perspective);
+	
 	FramebufferSpecification ShadowSpec;
 	ShadowSpec.Attachments = {FramebufferTextureFormat::DEPTH24STENCIL8};
 	ShadowSpec.Width = 2048;
@@ -45,10 +47,12 @@ void EditorLayer::OnAttach()
 	light->addComponent<CModel>(std::make_shared<Model>("assets/models/normalTest/normaltest.obj", light->id()));
 	
 	CreateShadowMap();
+
+	GridMap = std::make_unique<Grid>(10, 10);
+
 	m_EntityManager->update();
-	
-	initVoxelization();
-	initVoxelVisualization(1280, 720);
+
+
 	
 }
 
@@ -92,201 +96,6 @@ void EditorLayer::CreateShadowMap()
 
 }
 
-// ----------------------
-// Voxelization.
-// ----------------------
-void EditorLayer::initVoxelization()
-{
-		
-	voxelizationShader = ShaderMap.find("voxelization")->second;
-
-	assert(voxelizationShader != nullptr);
-
-	const std::vector<GLfloat> texture3D(4 * voxelTextureSize * voxelTextureSize * voxelTextureSize, 0.0f);
-	voxelTexture = new Texture3D(texture3D, voxelTextureSize, voxelTextureSize, voxelTextureSize, true);
-}
-
-void EditorLayer::voxelize(bool clearVoxelization)
-{
-	if (clearVoxelization) {
-		GLfloat clearColor[4] = { 0, 0, 0, 0 };
-		voxelTexture->Clear(clearColor);
-	}
-
-	
-
-	voxelizationShader->use();
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-	// Settings.
-	glViewport(0, 0, voxelTextureSize, voxelTextureSize);
-	glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
-	glDisable(GL_CULL_FACE);
-	glDisable(GL_DEPTH_TEST);
-	glDisable(GL_BLEND);
-
-	// Texture.
-	voxelTexture->Activate(voxelizationShader->ID, "texture3D", 0);
-	glBindImageTexture(0, voxelTexture->textureID, 0, GL_TRUE, 0, GL_WRITE_ONLY, GL_RGBA8);
-
-	// Lighting.
-	//uploadLighting(renderingScene, material->program);
-
-	// Render.
-	for (auto& e : m_EntityManager->getEntities())
-	{
-		Renderer::DrawEntityModel(voxelizationShader, e);
-	}
-	if (automaticallyRegenerateMipmap || regenerateMipmapQueued) 
-	{
-		glGenerateMipmap(GL_TEXTURE_3D);
-		regenerateMipmapQueued = false;
-	}
-	glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
-}
-
-// ----------------------
-// Voxelization visualization.
-// ----------------------
-void EditorLayer::initVoxelVisualization(unsigned int viewportWidth, unsigned int viewportHeight)
-{
-	//"DebugVoxelization"
-		//"WorldPosition"
-	worldPosShader = ShaderMap.find("WorldPosition")->second;
-	DebugVoxelization = ShaderMap.find("DebugVoxelization")->second;
-
-
-	assert(worldPosShader != nullptr);
-	assert(DebugVoxelization != nullptr);
-
-	vvfbo1 = new FBO(viewportHeight, viewportWidth);
-	vvfbo2 = new FBO(viewportHeight, viewportWidth);
-
-
-	// Rendering cube.
-	cubeModel = new Model("assets/models/cube.obj");
-	//assert(cubeModel->meshes.size() == 1);
-	
-}
-
-void EditorLayer::renderVoxelVisualization(Camera& cam)
-{
-	// -------------------------------------------------------
-	// Render cube to FBOs.
-	// -------------------------------------------------------
-	
-	
-	worldPosShader->use();
-	worldPosShader->setMat4("V", cam.GetViewMatrix());
-	worldPosShader->setMat4("P", cam.GetProjectionMatrix());
-	worldPosShader->setVec3("cameraPosition", cam.Position);
-
-	// Settings.
-	glClearColor(0.0, 0.0, 0.0, 1.0);
-	glEnable(GL_CULL_FACE);
-	glEnable(GL_DEPTH_TEST);
-
-	// Back.
-	glCullFace(GL_FRONT);
-	glBindFramebuffer(GL_FRAMEBUFFER, vvfbo1->frameBuffer);
-	glViewport(0, 0, vvfbo1->width, vvfbo1->height);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	glm::mat4 model = glm::mat4(0.0f);
-	worldPosShader->setMat4("model", model);
-	cubeModel->Draw(*worldPosShader);
-
-	// Front.
-	glCullFace(GL_BACK);
-	glBindFramebuffer(GL_FRAMEBUFFER, vvfbo2->frameBuffer);
-	glViewport(0, 0, vvfbo2->width, vvfbo2->height);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	model = glm::mat4(0.0f);
-	worldPosShader->setMat4("model", model);
-	cubeModel->Draw(*worldPosShader);
-
-	// -------------------------------------------------------
-	// Render 3D texture to screen.
-	// -------------------------------------------------------
-	DebugVoxelization->use();
-	DebugVoxelization->setMat4("V", cam.GetViewMatrix());
-	DebugVoxelization->setMat4("P", cam.GetProjectionMatrix());
-	DebugVoxelization->setVec3("cameraPosition", cam.Position);
-	
-	glBindRenderbuffer(GL_RENDERBUFFER, 0);
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-	// Settings.
-	glUniform1i(glGetUniformLocation(DebugVoxelization->ID, "state"), 0);
-	glDisable(GL_DEPTH_TEST);
-	glEnable(GL_CULL_FACE);
-
-	// Activate textures.
-	vvfbo1->ActivateAsTexture(DebugVoxelization->ID, "textureBack", 0);
-	vvfbo2->ActivateAsTexture(DebugVoxelization->ID, "textureFront", 1);
-	voxelTexture->Activate(DebugVoxelization->ID, "texture3D", 2);
-
-	// Render.
-	glViewport(0, 0, GameEngine::Get().GetWindow().GetWidth(), GameEngine::Get().GetWindow().GetHeight());
-	//m_FrameBuffer->Bind();
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	if (quadVAO == 0)
-	{
-		float quadVertices[] = {
-			// positions        // texture Coords
-			-1.0f,  1.0f, 0.0f, 0.0f, 1.0f,
-			-1.0f, -1.0f, 0.0f, 0.0f, 0.0f,
-			 1.0f,  1.0f, 0.0f, 1.0f, 1.0f,
-			 1.0f, -1.0f, 0.0f, 1.0f, 0.0f,
-		};
-		// setup plane VAO
-		glGenVertexArrays(1, &quadVAO);
-		glGenBuffers(1, &quadVBO);
-		glBindVertexArray(quadVAO);
-		glBindBuffer(GL_ARRAY_BUFFER, quadVBO);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), &quadVertices, GL_STATIC_DRAW);
-		glEnableVertexAttribArray(0);
-		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
-		glEnableVertexAttribArray(1);
-		glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
-	}
-	model = glm::mat4(0.0f);
-	DebugVoxelization->setMat4("model", model);
-	Renderer::RenderQuad(quadVAO);
-	//m_FrameBuffer->Unbind();
-}
-
-void EditorLayer::uploadRenderingSettings(const GLuint glProgram) const
-{
-	glUniform1i(glGetUniformLocation(glProgram, "settings.shadows"), shadows);
-	glUniform1i(glGetUniformLocation(glProgram, "settings.indirectDiffuseLight"), indirectDiffuseLight);
-	glUniform1i(glGetUniformLocation(glProgram, "settings.indirectSpecularLight"), indirectSpecularLight);
-	glUniform1i(glGetUniformLocation(glProgram, "settings.directLight"), directLight);
-}
-
-void EditorLayer::uploadLighting(Scene& renderingScene, const GLuint program) const
-{
-	// Point lights.
-	//for (unsigned int i = 0; i < renderingScene.pointLights.size(); ++i) renderingScene.pointLights[i].Upload(program, i);
-
-	// Number of point lights.
-	glUniform1i(glGetUniformLocation(program, "numberOfLights"), 0);
-}
-
-void EditorLayer::Upload(GLuint program, bool useProgram) {
-	if (useProgram) glUseProgram(program);
-
-	// Vec3s.
-	glUniform3fv(glGetUniformLocation(program, diffuseColorName), 1, glm::value_ptr(diffuseColor));
-	glUniform3fv(glGetUniformLocation(program, specularColorName), 1, glm::value_ptr(specularColor));
-
-	// Floats.
-	glUniform1f(glGetUniformLocation(program, emissivityName), emissivity);
-	glUniform1f(glGetUniformLocation(program, specularReflectanceName), specularReflectivity);
-	glUniform1f(glGetUniformLocation(program, diffuseReflectanceName), diffuseReflectivity);
-	glUniform1f(glGetUniformLocation(program, specularDiffusionName), specularDiffusion);
-	glUniform1f(glGetUniformLocation(program, transparencyName), transparency);
-	glUniform1f(glGetUniformLocation(program, refractiveIndexName), refractiveIndex);
-}
 
 void EditorLayer::OnUpdate(Timestep ts)
 {
@@ -297,7 +106,11 @@ void EditorLayer::OnUpdate(Timestep ts)
 		
 	m_EntityManager->update();
 	Camera& Editorcamera = *GameEngine::Get().GetCamera();
+	Editorcamera.SetProjectionType(Camera::ProjectionType::Perspective);
 	Editorcamera.RecalculateProjection();
+
+
+
 	if (FramebufferSpecification spec = m_FrameBuffer->GetSpecification();
 		m_ViewportSize.x > 0.0f && m_ViewportSize.y > 0.0f && // zero sized framebuffer is invalid
 		(spec.Width != m_ViewportSize.x || spec.Height != m_ViewportSize.y))

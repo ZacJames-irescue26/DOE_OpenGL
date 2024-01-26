@@ -44,6 +44,6 @@ void main()
 	// Assigns the texture coordinates from the Vertex Data to "texCoord"
 	texCoord = aTex;
 	// Assigns the normal from the Vertex Data to "Normal"
-	Normal = aNormal;
+	Normal = (model * vec4(aNormal,0.0)).xyz;
 	fragPosLight = lightSpaceMatrix * vec4(crntPos, 1.0f);
 }

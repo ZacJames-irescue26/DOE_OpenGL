@@ -21,4 +21,4 @@
 #include "Engine/Maths/Math.h"
 #include "Platform/OpenGL/Texture.h"
 #include "Engine/Assimp/Model.h"
-#include "Engine/Global illumination/Texture3D.h"
+#include "Engine/GridManager/Grid.h"

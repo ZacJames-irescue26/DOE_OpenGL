@@ -25,23 +25,18 @@ GameEngine::GameEngine()
 	CreateShader("selectionBoxShader", "assets/shaders/SelectionBoxVert.txt", "assets/shaders/SelectionBoxFrag.txt");
 	CreateShader("UIShader", "assets/shaders/UIVert.txt", "assets/shaders/UIFrag.txt");
 	CreateShader("LightShader", "assets/shaders/Light.vert", "assets/shaders/Light.frag");
-
-	CreateShader("Lighting", "assets/shaders/Lighting.vert", "assets/shaders/Lighting.frag");
+	CreateShader("ShadowCubeMap", "assets/shaders/ShadowCubeMap.vert", "assets/shaders/ShadowCubeMap.frag", "assets/shaders/ShadowCubeMap.geom");
 	CreateShader("SimpleDepthShader", "assets/shaders/SimpleDepthShader.vert", "assets/shaders/SimpleDepthShader.frag");
+
+	/*CreateShader("Lighting", "assets/shaders/Lighting.vert", "assets/shaders/Lighting.frag");
 	CreateShader("DebugDepthShader", "assets/shaders/debug_quad_depth.vert", "assets/shaders/debug_quad_depth.frag");
 	CreateShader("CubeMapShader", "assets/shaders/CubeMap.vert", "assets/shaders/CubeMap.frag");
 	CreateShader("HDR", "assets/shaders/HDR.vert", "assets/shaders/HDR.frag");
-	CreateShader("ShadowCubeMap", "assets/shaders/ShadowCubeMap.vert", "assets/shaders/ShadowCubeMap.frag", "assets/shaders/ShadowCubeMap.geom");
 	CreateShader("PBRShader", "assets/shaders/PBR.vert", "assets/shaders/PBR.frag");
 	CreateShader("IBLCubeMap", "assets/shaders/IBLCubemap.vert", "assets/shaders/IBLEquirectangular_to_cubemap.frag");
 	CreateShader("IrradianceShader", "assets/shaders/IBLCubemap.vert", "assets/shaders/irradiance_convolution.frag");
-	CreateShader("Anim_Model", "assets/shaders/anim_model.vert", "assets/shaders/anim_model.frag");
+	CreateShader("Anim_Model", "assets/shaders/anim_model.vert", "assets/shaders/anim_model.frag");*/
 	CreateShader("EditorShader", "assets/shaders/Editor.vert", "assets/shaders/Editor.frag");
-	
-	CreateShader("voxelization", "assets/shaders/Voxelization/voxelization.vert", "assets/shaders/Voxelization/voxelization.frag", "assets/shaders/Voxelization/voxelization.geom");
-	CreateShader("DebugVoxelization", "assets/shaders/Voxelization/Visualization/voxel_visualization.vert", "assets/shaders/Voxelization/Visualization/voxel_visualization.frag");
-	CreateShader("WorldPosition", "assets/shaders/Voxelization/Visualization/world_position.vert", "assets/shaders/Voxelization/Visualization/world_position.frag");
-	CreateShader("Voxel_cone", "assets/shaders/VoxelConeTracing/voxel_cone_tracing.vert", "assets/shaders/VoxelConeTracing/voxel_cone_tracing.frag");
 	glEnable(GL_DEPTH_TEST);
 	glClearColor(0, 128.0 / 255.0f, 128.0 / 255.0, 1.0f);
 
