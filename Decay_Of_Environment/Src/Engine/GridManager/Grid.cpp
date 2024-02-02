@@ -9,7 +9,7 @@ Grid::Grid(int width, int height)
 	{
 		for (int y = 0; y < height; y++)
 		{
-			Tile* newTile = new Tile(x * TileSize.x, y * TileSize.y);
+			Tile* newTile = new Tile(glm::vec2(x * TileSize.x, y * TileSize.y));
 			GridMap[x][y] = newTile;
 		}
 	}
@@ -17,11 +17,11 @@ Grid::Grid(int width, int height)
 
 glm::vec2 Grid::SnapToGrid(float x, float z)
 {
-	int x = round((x / TileSize.x) * TileSize.x);
-	int y = round((y / TileSize.y) * TileSize.y);
-	if (x < GridWidth && y < GridHeight)
+	int X = round((x / TileSize.x) * TileSize.x);
+	int Y = round((z / TileSize.y) * TileSize.y);
+	if (X < GridWidth && Y < GridHeight)
 	{
-		return {x, y};
+		return {X, Y};
 	}
 	else
 	{
