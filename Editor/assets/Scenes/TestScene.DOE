@@ -1,0 +1,29 @@
+Scene: Untitled
+Entities:
+  - Entity: 0
+    TagComponent:
+      Tag: plane
+    TransformComponent:
+      Translation: [1, -2.54579258, 0]
+      Rotation: [0, 0, 0]
+      Scale: [10, 1, 10]
+    ModelComponent:
+      Path: assets/models/TestGround.obj
+  - Entity: 1
+    TagComponent:
+      Tag: cube
+    TransformComponent:
+      Translation: [1, -1.61483383, 6.45357323]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    ModelComponent:
+      Path: assets/models/normalTest/normaltest.obj
+  - Entity: 2
+    TagComponent:
+      Tag: light
+    TransformComponent:
+      Translation: [1, -1.58377278, -3.69956231]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    ModelComponent:
+      Path: assets/models/normalTest/normaltest.obj
