@@ -42,16 +42,17 @@ private:
 	
 	SceneHeirarchyPanel m_SceneHierarchyPanel;
 	ContentBrowser m_CotentBrowserPanel;
-
-
+	bool EditorSelection = true;
+	bool GameSelection = false;
+	std::shared_ptr<Entity> m_SelectedEntity;
 	//shadow map
 	const unsigned int SHADOW_WIDTH = 2048, SHADOW_HEIGHT = 2048;
 	unsigned int depthMapFBO;
 	unsigned int shadowMap;
-	
+	glm::vec2 viewportSize;
 	std::unique_ptr<Grid> GridMap;
 	
-	
+	MousePicker* Ray;
 
 
 };

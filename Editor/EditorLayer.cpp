@@ -5,6 +5,7 @@
 #include "Engine/Engine.h"
 #include "ImGuizmo.h"
 #include "glad/glad.h"
+#include "glm/gtx/string_cast.hpp"
 
 #define BIND_EVENT_FN(x) std::bind(&x, this, std::placeholders::_1)
 
@@ -37,7 +38,7 @@ void EditorLayer::OnAttach()
 	m_ShadowFramebuffer = std::make_shared<OpenGLFramebuffer>(ShadowSpec);
 
 	auto plane = m_EntityManager->addEntity("plane");
-	plane->addComponent<CTransform>(glm::vec3(1.0f, -0.5f, 0.0f), glm::vec3(0.0, 0.0, 0.0), glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(-90.0f, 0.0f, 0.0f));
+	plane->addComponent<CTransform>(glm::vec3(1.0f, -0.5f, 0.0f), glm::vec3(00.0, 0.0, 0.0), glm::vec3(10.0f, 1.0f, 10.0f), glm::vec3(0.0f, 0.0f, 0.0f));
 	plane->addComponent<CModel>(std::make_shared<Model>("assets/models/TestGround.obj", plane->id()));
 	auto cube = m_EntityManager->addEntity("cube");
 	cube->addComponent<CTransform>(glm::vec3(1.0f, 0.0f, 1.0f), glm::vec3(0.0, 0.0, 0.0), glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(0.0f, 0.0f, 0.0f));
@@ -48,11 +49,12 @@ void EditorLayer::OnAttach()
 	
 	CreateShadowMap();
 
-	GridMap = std::make_unique<Grid>(10, 10);
+	GridMap = std::make_unique<Grid>(10, 10, m_EntityManager);
 
 	m_EntityManager->update();
 
-
+	Ray = new MousePicker(m_camera, plane);
+	
 	
 }
 
@@ -101,14 +103,21 @@ void EditorLayer::OnUpdate(Timestep ts)
 {
 		
 		
-		
+	
 		
 		
 	m_EntityManager->update();
+	
 	Camera& Editorcamera = *GameEngine::Get().GetCamera();
 	Editorcamera.SetProjectionType(Camera::ProjectionType::Perspective);
 	Editorcamera.RecalculateProjection();
 
+	//glm::vec3 WorldRay = Ray->setFromCamera(glm::vec2(Input::GetMouseX(), Input::GetMouseY()), Editorcamera, glm::vec2(m_ViewportSize.x, m_ViewportSize.y));
+	//auto CurrentRay = Ray->CalculateMouseRay(Input::GetMouseX(), Input::GetMouseY(), Editorcamera);
+	Ray->RayUpdate(Ray, glm::vec2(Input::GetMouseX(), Input::GetMouseY()), m_ViewportSize);
+	glm::vec3 TerrainRay = Ray->CurrentTerrainPoint;
+
+	
 
 
 	if (FramebufferSpecification spec = m_FrameBuffer->GetSpecification();
@@ -155,26 +164,55 @@ void EditorLayer::OnUpdate(Timestep ts)
 		EditorShader->setVec4("lightColor", lightColor);
 		glActiveTexture(GL_TEXTURE1);
 		glBindTexture(GL_TEXTURE_2D, m_ShadowFramebuffer->GetDepthAttachment());
+
+		
+
+
 		EditorShader->setInt("shadowMap", 1);
 		if (e->hasComponent<CModel>())
 		{
+			if (e->tag() == "cube")
+			{
+				//glm::vec3 GridPoint = GridMap->GetGridPosition(glm::vec2(TerrainRay.x, TerrainRay.z));
+				e->getComponent<CTransform>().pos = TerrainRay;
+			}
 			Renderer::DrawEntityModel(EditorShader, e);
 		}
 	}
 
+
+
 	auto [mx, my] = ImGui::GetMousePos();
 	mx -= m_ViewportBounds[0].x;
 	my -= m_ViewportBounds[0].y;
-	glm::vec2 viewportSize = m_ViewportBounds[1] - m_ViewportBounds[0];
+	viewportSize = m_ViewportBounds[1] - m_ViewportBounds[0];
 	my = viewportSize.y - my;
 	int mouseX = (int)mx;
 	int mouseY = (int)my;
-	if (mouseX >= 0 && mouseY >= 0 && mouseX < (int)viewportSize.x && mouseY < (int)viewportSize.y)
+	if (mouseX >= 0 && mouseY >= 0 && mouseX < (int)viewportSize.x && mouseY < (int)viewportSize.y && EditorSelection)
 	{
 
 		int PixelData = m_FrameBuffer->ReadPixel(1, mouseX, mouseY);
 		m_HoveredEntity = PixelData == -1 ? nullptr : m_EntityManager->GetEntityByID(PixelData);
 	}
+
+	if (Input::IsMouseButtonPressed(Mouse::Button0))
+	{
+		float MouseX = Input::GetMouseX();
+		float MouseY = Input::GetMouseY();
+		if (MouseX >= 0 && MouseY >= 0 && MouseX < (int)viewportSize.x && MouseY < (int)viewportSize.y && GameSelection)
+		{
+
+			int PixelData = m_FrameBuffer->ReadPixel(1, MouseX, MouseY);
+			m_SelectedEntity = PixelData == -1 ? nullptr : m_EntityManager->GetEntityByID(PixelData);
+			if (m_SelectedEntity && m_SelectedEntity->tag() == "Grid")
+			{
+				std::cout << "World pos: " << glm::to_string(m_SelectedEntity->getComponent<CTransform>().pos) << " Grid pos: " << glm::to_string(GridMap->GetGridPosition(m_SelectedEntity->getComponent<CTransform>().pos)) << std::endl;
+				m_SelectedEntity = nullptr;
+			}
+		}
+	}
+
 	m_FrameBuffer->Unbind();
 	Renderer::EndScene();
 	
@@ -270,6 +308,8 @@ void EditorLayer::OnImGuiRender()
 		name = m_HoveredEntity->tag();
 	ImGui::Text("Hovered Entity: %s", name.c_str());
 	ImGui::Text("Shadow Map:");
+	ImGui::Checkbox("Toggle Editor selection", &EditorSelection);
+	ImGui::Checkbox("Toggle Game selection", &GameSelection);
 	uint64_t ShadowtextureID = m_ShadowFramebuffer->GetDepthAttachment();
 	ImGui::Image(reinterpret_cast<void*>(ShadowtextureID), ImVec2{ 160, 160 });
 	ImGui::SliderFloat("Light Position: x", &lightPos.x, -10.0f, 50.0f);

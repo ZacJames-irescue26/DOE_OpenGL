@@ -6,7 +6,7 @@
 
 
 #define RECURSION_COUNT 200
-#define RAY_RANGE 600
+#define RAY_RANGE 60000
 
 class MousePicker
 {
@@ -15,7 +15,7 @@ public:
 
 	
 	glm::vec3 GetCurrentRay();
-	glm::vec3 CalculateMouseRay(float MouseX, float MouseY, Camera* cam);
+	glm::vec3 CalculateMouseRay(float MouseX, float MouseY, Camera* cam, glm::vec2 windowsize);
 	glm::vec2 GetNormalizedDeviceCoords(float MouseX, float MouseY);
 
 	glm::vec4 ToEyeCoords(glm::vec4 ClipCoords);
@@ -23,7 +23,11 @@ public:
 	glm::vec3 getPointOnRay(glm::vec3 ray, float distance);
 	glm::vec3 binarySearch(int count, float start, float finish, glm::vec3 ray);
 	bool intersectionInRange(float start, float finish, glm::vec3 ray);
+	
+	bool intersectionInRange(glm::vec3 start, float finish, glm::vec3 ray);
 	bool isUnderGround(glm::vec3 testPoint);
+	void RayUpdate(MousePicker* Ray, glm::vec2 Pos, glm::vec2 WindowSize);
+	glm::vec3 setFromCamera(const glm::vec2 coords, Camera* camera, glm::vec2 WindowSize);
 	glm::vec3 currentRay = glm::vec3(0.0f);
 	glm::vec3 CurrentTerrainPoint = glm::vec3(0.0f);
 private:
@@ -31,5 +35,6 @@ private:
 	glm::mat4 ProjectionMatrix;
 	glm::mat4 ViewMatrix;
 	Camera* camera;
+	glm::vec2 WindowSize;
 
 };
