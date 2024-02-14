@@ -40,13 +40,17 @@ void EditorLayer::OnAttach()
 	auto plane = m_EntityManager->addEntity("plane");
 	plane->addComponent<CTransform>(glm::vec3(1.0f, -0.5f, 0.0f), glm::vec3(00.0, 0.0, 0.0), glm::vec3(10.0f, 1.0f, 10.0f), glm::vec3(0.0f, 0.0f, 0.0f));
 	plane->addComponent<CModel>(std::make_shared<Model>("assets/models/TestGround.obj", plane->id()));
-	auto cube = m_EntityManager->addEntity("cube");
+	/*auto cube = m_EntityManager->addEntity("cube");
 	cube->addComponent<CTransform>(glm::vec3(1.0f, 0.0f, 1.0f), glm::vec3(0.0, 0.0, 0.0), glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(0.0f, 0.0f, 0.0f));
-	cube->addComponent<CModel>(std::make_shared<Model>("assets/models/normalTest/normaltest.obj", cube->id()));
+	cube->addComponent<CModel>(std::make_shared<Model>("assets/models/normalTest/normaltest.obj", cube->id()));*/
 	auto light = m_EntityManager->addEntity("light");
 	light->addComponent<CTransform>(glm::vec3(1.0f, -0.5f, 0.0f), glm::vec3(0.0, 0.0, 0.0), glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(0.0f, 0.0f, 0.0f));
 	light->addComponent<CModel>(std::make_shared<Model>("assets/models/normalTest/normaltest.obj", light->id()));
 	
+	auto StaticScene = m_EntityManager->addEntity("Scene");
+	StaticScene->addComponent<CTransform>(glm::vec3(0.0f, -0.5f, 0.0f), glm::vec3(0.0, 0.0, 0.0), glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(0.0f, 0.0f, 0.0f));
+	StaticScene->addComponent<CModel>(std::make_shared<Model>("assets/Scenes/SceneTest.obj", StaticScene->id()));
+
 	CreateShadowMap();
 
 	GridMap = std::make_unique<Grid>(10, 10, m_EntityManager);
