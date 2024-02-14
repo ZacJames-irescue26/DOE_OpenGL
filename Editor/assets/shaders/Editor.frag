@@ -182,7 +182,7 @@ void main()
 	lighting = Ambient;
 
 	Colour = baseColour * lighting;
-	Colour = normal;
+	//Colour = normal;
 	FragColor = vec4(Colour, 1.0f);
 	EntityId = v_EntityID;
 }

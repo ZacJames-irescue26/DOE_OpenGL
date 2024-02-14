@@ -1,5 +1,5 @@
-#include "camera.h"
 #include "pch.h"
+#include "camera.h"
 #include "Engine.h"
 
 
@@ -47,7 +47,7 @@ void Camera::RecalculateProjection()
 	}
 	else
 	{
-		m_OrthographicSize = 10.0f;
+		/*m_OrthographicSize = 10.0f;
 		m_AspectRatio = 16.0/9.0;
 		m_OrthographicNear = 0.1f;
 		m_OrthographicFar = 1000.0f;
@@ -59,7 +59,7 @@ void Camera::RecalculateProjection()
 
 		projection = glm::ortho(orthoLeft, orthoRight,
 			orthoBottom, orthoTop, m_OrthographicNear, m_OrthographicFar);
-		cameraMatrix = projection * view;
+		cameraMatrix = projection * view;*/
 
 	}
 
@@ -112,7 +112,6 @@ void Camera::Inputs(GLFWwindow* window, Timestep ts)
 	// Handles mouse inputs
 	if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS)
 	{
-
 		// Hides mouse cursor
 		glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
 

@@ -22,7 +22,7 @@ public:
 	glm::mat4 cameraMatrix = glm::mat4(1.0f);
 	const float ZOOM = 45.0f;
 	// Prevents the camera from jumping around when first clicking left click
-	bool firstClick = true;
+	bool firstClick = false;
 
 	// Stores the width and height of the window
 	float width;
@@ -30,7 +30,7 @@ public:
 
 	// Adjust the speed of the camera and it's sensitivity when looking around
 	float speed = 0.01f;
-	float sensitivity = 100.0f;
+	float sensitivity = 10.0f;
 
 	// Camera constructor to set up initial values
 	Camera();
@@ -52,7 +52,6 @@ public:
 
 
 	glm::quat GetOrientation() {return glm::quat(glm::vec3(Orientation));}
-	
 
 	/*float GetOrthographicSize() const { return m_OrthographicSize; }
 	void SetOrthographicSize(float size) { m_OrthographicSize = size; RecalculateProjection(); }

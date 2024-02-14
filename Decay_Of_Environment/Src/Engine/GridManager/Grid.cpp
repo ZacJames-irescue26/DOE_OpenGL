@@ -9,11 +9,7 @@ Grid::Grid(int width, int height, EntityManager* Manager)
 	{
 		for (int y = 0; y < height; y++)
 		{
-<<<<<<< HEAD
-			Tile* newTile = new Tile(glm::vec2(x * TileSize.x, y * TileSize.y));
-=======
 			Tile* newTile = new Tile(glm::vec2(x * TileSize.x, y * TileSize.y), Manager);
->>>>>>> e7422214c9ece909744bc837e62dcd36cc43370a
 			GridMap[x][y] = newTile;
 		}
 	}
@@ -21,19 +17,13 @@ Grid::Grid(int width, int height, EntityManager* Manager)
 
 glm::vec2 Grid::SnapToGrid(float x, float z)
 {
-<<<<<<< HEAD
-	int X = round((x / TileSize.x) * TileSize.x);
-	int Y = round((z / TileSize.y) * TileSize.y);
-	if (X < GridWidth && Y < GridHeight)
-	{
-		return {X, Y};
-=======
+
 	int Gridx = round((x / TileSize.x) * TileSize.x);
 	int Gridy = round((z / TileSize.y) * TileSize.y);
 	if (Gridx < GridWidth && Gridy < GridHeight)
 	{
 		return {Gridx, Gridy};
->>>>>>> e7422214c9ece909744bc837e62dcd36cc43370a
+
 	}
 	else
 	{

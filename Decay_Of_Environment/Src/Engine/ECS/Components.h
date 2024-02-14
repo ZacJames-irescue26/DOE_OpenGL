@@ -5,6 +5,7 @@
 #include "../animation.h"
 #include "../animator.h"
 #include "../Camera.h"
+#include "Jolt/Jolt.h"
 
 enum UnitType
 {
@@ -169,7 +170,7 @@ public:
 
 class CStaticMesh : public Component
 {
-
+	
 };
 
 class CCamera : public Component

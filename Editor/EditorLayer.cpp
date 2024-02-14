@@ -52,8 +52,9 @@ void EditorLayer::OnAttach()
 	GridMap = std::make_unique<Grid>(10, 10, m_EntityManager);
 
 	m_EntityManager->update();
-
-	Ray = new MousePicker(m_camera, plane);
+	Camera& Editorcamera = *GameEngine::Get().GetCamera();
+	Editorcamera.SetProjectionType(Camera::ProjectionType::Perspective);
+	//Ray = new MousePicker(m_camera, plane);
 	
 	
 }
@@ -108,14 +109,14 @@ void EditorLayer::OnUpdate(Timestep ts)
 		
 	m_EntityManager->update();
 	
-	Camera& Editorcamera = *GameEngine::Get().GetCamera();
-	Editorcamera.SetProjectionType(Camera::ProjectionType::Perspective);
-	Editorcamera.RecalculateProjection();
+	
+	m_camera->updateMatrix(45.0f, 0.1f, 1000.0f);
+	//m_camera->RecalculateProjection();
 
 	//glm::vec3 WorldRay = Ray->setFromCamera(glm::vec2(Input::GetMouseX(), Input::GetMouseY()), Editorcamera, glm::vec2(m_ViewportSize.x, m_ViewportSize.y));
 	//auto CurrentRay = Ray->CalculateMouseRay(Input::GetMouseX(), Input::GetMouseY(), Editorcamera);
-	Ray->RayUpdate(Ray, glm::vec2(Input::GetMouseX(), Input::GetMouseY()), m_ViewportSize);
-	glm::vec3 TerrainRay = Ray->CurrentTerrainPoint;
+	//Ray->RayUpdate(Ray, glm::vec2(Input::GetMouseX(), Input::GetMouseY()), m_ViewportSize);
+	//glm::vec3 TerrainRay = Ray->CurrentTerrainPoint;
 
 	
 
@@ -155,10 +156,10 @@ void EditorLayer::OnUpdate(Timestep ts)
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	m_FrameBuffer->ClearAttachment(1, -1);
 	auto EditorShader = ShaderMap.find("EditorShader")->second;
-	Renderer::BeginScene(&Editorcamera, EditorShader);
+	Renderer::BeginScene(m_camera, EditorShader);
 	for (auto& e : m_EntityManager->getEntities())
 	{
-		EditorShader->setVec3("camPos", Editorcamera.Position);
+		EditorShader->setVec3("camPos", m_camera->Position);
 		EditorShader->setMat4("lightSpaceMatrix", lightSpaceMatrix);
 		EditorShader->setVec3("lightPos", lightPos);
 		EditorShader->setVec4("lightColor", lightColor);
@@ -171,11 +172,6 @@ void EditorLayer::OnUpdate(Timestep ts)
 		EditorShader->setInt("shadowMap", 1);
 		if (e->hasComponent<CModel>())
 		{
-			if (e->tag() == "cube")
-			{
-				//glm::vec3 GridPoint = GridMap->GetGridPosition(glm::vec2(TerrainRay.x, TerrainRay.z));
-				e->getComponent<CTransform>().pos = TerrainRay;
-			}
 			Renderer::DrawEntityModel(EditorShader, e);
 		}
 	}
